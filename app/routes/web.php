@@ -30,5 +30,8 @@ Route::resource('items', 'ItemController');
 Route::get('items/buy/{item}', [ItemController::class,'buy'])->name('items.buy');
 Route::get('items/buy_confirm/{item}', [ItemController::class,'buy_confirm'])->name('items.buy_confirm');
 
-
-
+//ログイン中のユーザーのみアクセス可能
+Route::group(['middleware' => ['auth']], function () {
+    //「ajaxlike.jsファイルのurl:'ルーティング'」に書くものと合わせる。
+    Route::post('ajaxlike', 'ItemsController@ajaxlike')->name('items.ajaxlike');
+});

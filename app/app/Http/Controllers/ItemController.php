@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Items;
+use App\Models\Likes;
 use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Auth;
@@ -14,14 +15,16 @@ use Illuminate\Support\Facades\Auth;
 class ItemController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Store a newly created resource in storage.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
         $userid = Auth::id();
         $items = new Items;
+        $like_model = new Likes;
 
         if($request->price_min != null){
             $price_min = $request->price_min;
@@ -48,18 +51,16 @@ class ItemController extends Controller
 
                         return view('items.top',[
                             'items' => $items,
+                            'likes_model' => $like_model,
                         ]);
         }else{
             $items = $items ->where('user_id','!=',$userid)
                         ->where('del_fig','0')
                         ->where('purchase_fig','0')
-                        
                         ->get();
-
-                        
-
                         return view('items.top',[
                             'items' => $items,
+                            'likes_model' => $like_model,
                         ]);
         }
     }
@@ -220,5 +221,37 @@ class ItemController extends Controller
         return redirect('items'); 
     }
 
-    
+    public function ajaxlike(Request $request)
+    {
+        $id = Auth::user()->id;
+        $item_id = $request->item_id;
+        $like = new Likes;
+        $item = Items::findOrFail($item_id);
+
+        // 空でない（既にいいねしている）なら
+        if ($like->like_exist($user_id,$id)) {
+            //likesテーブルのレコードを削除
+            $like = Likes::where('item_id', $item_id)->where('user_id', $id)->delete();
+
+        } else {
+            //空（まだ「いいね」していない）ならlikesテーブルに新しいレコードを作成する
+            $like = new Likes;
+            $like->item_id = $request->item;
+            $like->user_id = Auth::user()->id;
+            $like->save();
+        }
+
+        //loadCountとすればリレーションの数を○○_countという形で取得できる（今回の場合はいいねの総数）
+        $itemLikesCount = $item->loadCount('likes')->likes_count;
+
+        //一つの変数にajaxに渡す値をまとめる
+        //今回ぐらい少ない時は別にまとめなくてもいいけど一応。笑
+        $json = [
+            'itemLikesCount' => $itemLikesCount,
+        ];
+        //下記の記述でajaxに引数の値を返す
+
+        return response()->json($json);
+    }
+
 }

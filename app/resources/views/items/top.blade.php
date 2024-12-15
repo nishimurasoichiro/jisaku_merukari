@@ -27,6 +27,39 @@
 
     <div class="row justify-content-center">
         <div class="col-md-8">
+        
+    <script>
+      $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            url: '/ajaxlike',  //routeの記述
+            type: 'POST', //受け取り方法の記述（GETもある）
+            data: {
+                'item_id': likesItemId //コントローラーに渡すパラメーター
+            },
+            })
+
+        // Ajaxリクエストが成功した場合
+        .done(function (data) {
+        //lovedクラスを追加
+            $this.toggleClass('loved'); 
+
+        //.likesCountの次の要素のhtmlを「data.itemLikesCount」の値に書き換える
+            $this.next('.likesCount').html(data.itemLikesCount); 
+
+        })
+        // Ajaxリクエストが失敗した場合
+        .fail(function (data, xhr, err) {
+        //ここの処理はエラーが出た時にエラー内容をわかるようにしておく。
+        //とりあえず下記のように記述しておけばエラー内容が詳しくわかります。笑
+            console.log('エラー');
+            console.log(err);
+            console.log(xhr);
+        });
+    
+    return false;
+    </script>
         <div class="card">
             @foreach($items as $item)
                 <div class="card">
@@ -40,6 +73,20 @@
                             <h4 class="item-title">{{ $item['name'] }}</h5>
                             <h5 class="card-title">{{ $item['price'] }}円</h5>
                             <a  class="btn btn-primary" href="{{ route('items.show' ,['item' => $item['id']]) }}">詳細</a>
+                            
+                            @if($likes_model->like_exist(Auth::user()->id,$item->id))
+                            <p class="favorite-marke">
+                            <a class="js-like-toggle loved" href="" data-itemid="{{ $item->id }}">いいね済み</a>
+                            <span class="likesCount">{{$item->likes_count}}</span>
+                            </p>
+                            @else
+                            <p class="favorite-marke">
+                            <a class="js-like-toggle" href="" data-itemid="{{ $item->id }}">いいねじゃないよ</i></a>
+                            <span class="likesCount">{{$item->likes_count}}</span>
+                            </p>
+                            @endif
+                            
+ 
                         </div>
                     </div>
                 </div>

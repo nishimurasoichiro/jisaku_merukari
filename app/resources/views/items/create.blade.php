@@ -31,13 +31,13 @@
                         <textarea class="form-control" id="explanation" name='explanation' rows="3"></textarea>
                     </div>
 
-                    <label for="situation">商品説明</label> 
+                    <label for="situation">商品状態</label> 
                     <select name='situation'>
-                        <option value='1'>1</option>
-                        <option value='2'>2</option>
-                        <option value='3'>3</option>
-                        <option value='4'>4</option>
-                        <option value='5'>5</option>
+                        <option value='1'>悪い</option>
+                        <option value='2'>少し悪い</option>
+                        <option value='3'>普通</option>
+                        <option value='4'>良い</option>
+                        <option value='5'>非常に良い</option>
                     </select>
                     
                     <button type="submit" class="btn btn-primary">登録</button>

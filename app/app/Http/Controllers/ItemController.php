@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Items;
 use App\Models\Likes;
+use App\Models\Users;
 use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Auth;
@@ -22,10 +23,12 @@ class ItemController extends Controller
      */
     public function index(Request $request)
     {
+        
         $userid = Auth::id();
         $items = new Items;
         $like_model = new Likes;
-
+        
+        
         if($request->price_min != null){
             $price_min = $request->price_min;
         }else{
@@ -39,6 +42,7 @@ class ItemController extends Controller
         }
         
         $word = $request->word;
+        
 
         if($word != null){
             $items = $items ->where('user_id','!=',$userid)
@@ -47,6 +51,7 @@ class ItemController extends Controller
                         ->where('price','<=',$price_max)
                         ->where('price','>=',$price_min)
                         ->where('name','LIKE',"%{$word}%")
+                        ->withCount('likes')
                         ->get();
 
                         return view('items.top',[
@@ -57,7 +62,11 @@ class ItemController extends Controller
             $items = $items ->where('user_id','!=',$userid)
                         ->where('del_fig','0')
                         ->where('purchase_fig','0')
+                        ->where('price','<=',$price_max)
+                        ->where('price','>=',$price_min)
+                        ->withCount('likes')
                         ->get();
+                        
                         return view('items.top',[
                             'items' => $items,
                             'likes_model' => $like_model,
@@ -121,9 +130,11 @@ class ItemController extends Controller
         $item = new Items;
 
         $item = $item->where('id',$id)->first();
+        $situation_list = ['','悪い','少し悪い','普通','良い','非常に良い'];
 
         return view('items.show_item',[
             'item' => $item,
+            'situation_list' =>$situation_list,
             ]);
     }
 
@@ -163,7 +174,7 @@ class ItemController extends Controller
 
         $items->save();
 
-        return redirect('items'); 
+        return redirect('home'); 
     }
 
     /**
@@ -180,7 +191,7 @@ class ItemController extends Controller
 
         $items->delete();
 
-        return redirect('items'); 
+        return redirect('home'); 
     }
 
     /**
@@ -192,11 +203,16 @@ class ItemController extends Controller
     public function buy($id)
     {
         $items = new Items;
+        $users = new Users;
+        $user = $users->find(Auth::id());
 
         $items = $items->where('id',$id)->first();
+        $situation_list = ['','悪い','少し悪い','普通','良い','非常に良い'];
 
         return view('items.buy',[
             'item' => $items,
+            'user' => $user,
+            'situation_list' =>$situation_list,
             ]);
     }
 
@@ -208,6 +224,9 @@ class ItemController extends Controller
      */
     public function buy_confirm($id)
     {
+
+        
+
         $items = new Items;
         $items = $items->find($id);
         
@@ -228,19 +247,24 @@ class ItemController extends Controller
         $like = new Likes;
         $item = Items::findOrFail($item_id);
 
+        $like_flg = "";
         // 空でない（既にいいねしている）なら
-        if ($like->like_exist($user_id,$id)) {
+        if ($like->like_exist($id,$item_id)) {
             //likesテーブルのレコードを削除
             $like = Likes::where('item_id', $item_id)->where('user_id', $id)->delete();
+            $like_flg = 0;
 
         } else {
             //空（まだ「いいね」していない）ならlikesテーブルに新しいレコードを作成する
             $like = new Likes;
-            $like->item_id = $request->item;
-            $like->user_id = Auth::user()->id;
+            $like->item_id = $item_id;
+            $like->user_id = $id;
             $like->save();
+
+            $like_flg = 1;
         }
 
+       
         //loadCountとすればリレーションの数を○○_countという形で取得できる（今回の場合はいいねの総数）
         $itemLikesCount = $item->loadCount('likes')->likes_count;
 
@@ -248,6 +272,7 @@ class ItemController extends Controller
         //今回ぐらい少ない時は別にまとめなくてもいいけど一応。笑
         $json = [
             'itemLikesCount' => $itemLikesCount,
+            'like_flg' =>$like_flg,
         ];
         //下記の記述でajaxに引数の値を返す
 

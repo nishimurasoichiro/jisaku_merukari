@@ -19,7 +19,7 @@
 
                     <div class="form-group">
                         <label for="image">画像</label>
-                        <input type="image" class="form-control" name='price' placeholder="画像" value="{{$item['image']}}">
+                        <input type="file" class="form-control" name='price' placeholder="画像" value="{{$item['image']}}">
                     </div>
 
                     <div class="form-group">

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\HomeController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,7 +14,7 @@ use App\Http\Controllers\ItemController;
 */
 
 Route::get('/', function () {
-    return view('itmes.top');
+    return redirect('items'); 
 });
 
 Auth::routes();
@@ -33,5 +34,10 @@ Route::get('items/buy_confirm/{item}', [ItemController::class,'buy_confirm'])->n
 //ログイン中のユーザーのみアクセス可能
 Route::group(['middleware' => ['auth']], function () {
     //「ajaxlike.jsファイルのurl:'ルーティング'」に書くものと合わせる。
-    Route::post('ajaxlike', 'ItemsController@ajaxlike')->name('items.ajaxlike');
+    Route::post('ajaxlike', 'ItemController@ajaxlike')->name('items.ajaxlike');
 });
+
+Route::post('user_edit', [HomeController::class,'update_userForm'])->name('user_edit');
+Route::post('update_edit/{user_id}', [HomeController::class,'update_user'])->name('update_user');
+
+Route::get('stop_user', 'HomeController@stop_user')->name('stop_user');

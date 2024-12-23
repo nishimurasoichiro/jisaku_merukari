@@ -20,7 +20,7 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
+    <div>
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -54,10 +54,12 @@
                                 </li>
                             @endif
                         @else
+                        @if(Auth::user()->use_fig != 1)
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('items.index') }}">{{ __('トップへ') }}</a>
                                 </li>
-
+                        @else
+                        @endif
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('home') }}">{{ __('ホームへ') }}</a>
                                 </li>

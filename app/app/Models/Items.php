@@ -15,12 +15,17 @@ class Items extends Model
         'buyer_id' , 
         'buy_at' , 
         'del_fig' , 
+        'password',
         'purchase_fig' , 
         'updated_at'
     ];
 
     public function user(){
         return $this ->belongsTo('App\User','user_id','id');
+        }
+    
+    public function likes(){
+        return $this ->hasMany('App\Models\Likes','item_id','id');
         }
 
 }
